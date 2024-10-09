@@ -2,10 +2,15 @@
 # variable names are as in paper
 
 import bisect
+import datetime
+import sys
+import time
 
 from matplotlib import pyplot as plt
 
 import viz_bicliques
+from minedgerolemining.readup import readup, uptopu
+from minedgerolemining.removedominators import neighbours
 
 
 def biclique_find(G):
@@ -122,44 +127,51 @@ def biclique_find_core(G, L, R, P, NHS, Q):
         NHS = [nhs for i, nhs in enumerate(NHS) if i not in dI]
 
 
-def test_article_example():
-    G = [
-        ('u1', 'p1'),
-        ('u1', 'p2'),
+def test_article_example(up):
 
-        ('u2', 'p2'),
-        ('u2', 'p3'),
-
-        ('u3', 'p1'),
-        ('u3', 'p3'),
-
-        ('u4', 'p1'),
-        ('u4', 'p2'),
-        ('u4', 'p3'),
-
-        ('u5', 'p1'),
-        ('u5', 'p2'),
-        ('u5', 'p3'),
-
-        # ('u6', 'p1'),
-        # ('u6', 'p2'),
-        # ('u6', 'p3'),
-
-    ]
+    G = []
+    for u in up:
+        for p in up[u]:
+            G.append(('u{user}'.format(user=u), 'p{perm}'.format(perm=p)))
 
     plt.figure()
     viz_bicliques.plot_biclique(G)
-    plt.show(block=False)
+    # plt.show(block=False)
     # pass
 
     for i, (U, V) in enumerate(biclique_find(G)):
         plt.figure()
         viz_bicliques.plot_biclique(G, (U, V))
-        plt.show(block=False)
+        # plt.show(block=False)
 
         print('\nLargest biclique #%d:' % i)
         print('U: %s' % str(U))
         print('V: %s' % str(V))
 
 
-test_article_example()
+    pu = uptopu(up)
+
+    print('\nNeighbours:')
+    for u in up:
+        for p in up[u]:
+            e = tuple((u, p))
+            ne = neighbours(e, dict(), up, pu)
+            print(e, ': ', ne)
+
+
+def main():
+    if len(sys.argv) != 2:
+        print('Usage: ', end='')
+        print(sys.argv[0], end=' ')
+        print('<input-file>')
+        return
+
+    up = readup(sys.argv[1])
+    if not up:
+        return
+
+    test_article_example(up)
+
+
+if __name__ == '__main__':
+    main()

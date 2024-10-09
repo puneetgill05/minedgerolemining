@@ -3,6 +3,11 @@
 import sys
 
 def readup(infile):
+    ret, usermap, permmap = readup_and_usermap_permmap(infile)
+    return ret
+
+
+def readup_and_usermap_permmap(infile):
     # map users and perms to ids 0, 1, 2...
     uid = 0
     pid = 0
@@ -19,6 +24,7 @@ def readup(infile):
             i.close()
             return None
         else:
+            l[0] = l[0].replace("\'", '')
             if l[0] not in usermap:
                 usermap[l[0]] = uid
                 # print('usermap;', str(l[0]), ',', str(uid))
@@ -27,16 +33,21 @@ def readup(infile):
             # Proceed assuming 1st char in l[1] is [, last is ]
             m = (l[1][1:len(l[1]) - 2]).split(',')
             for p in m:
-                q = p.split("'")
-                for r in q:
-                    if not (not r or (r[0]).isspace()):
-                        if r not in permmap:
-                            permmap[r] = pid
-                            # print('permmap;', str(r), ',', str(pid))
-                            pid = pid + 1
-                        (ret[usermap[l[0]]]).add(permmap[r])
+                # q = p.split("'")
+                p = p.strip()
+                p = p.replace("\'", '')
+
+                # for r in p:
+                #     if not (not r or (r[0]).isspace()):
+
+                if p not in permmap:
+                    permmap[p] = pid
+                    # print('permmap;', str(r), ',', str(pid))
+                    pid = pid + 1
+                (ret[usermap[l[0]]]).add(permmap[p])
     i.close()
 
+    infile = infile.replace('.txt', '')
     upmapfilename = infile + '-upmap.txt'
     w = open(upmapfilename, 'w')
     for u in usermap:
@@ -47,7 +58,7 @@ def readup(infile):
     print('UP map written to', upmapfilename)
     sys.stdout.flush()
 
-    return ret
+    return ret, usermap, permmap
 
 
 def uptopu(up):
@@ -77,6 +88,23 @@ def dumpup(up, outfile):
             o.write("\'P" + str(p) + "\'")
         o.write("]\n")
 
+    o.close()
+
+
+def writefile(content: dict, outfile: str):
+    o = open(outfile, "w")
+
+    for k in content:
+        o.write(k + ':')
+        isfirst = True
+        for p in content[k]:
+            if not isfirst:
+                o.write(",")
+            else:
+                o.write("[")
+                isfirst = False
+            o.write("\'" + str(p) + "\'")
+        o.write("]\n")
     o.close()
 
 

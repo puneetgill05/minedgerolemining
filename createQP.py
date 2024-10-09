@@ -119,6 +119,7 @@ def reduce_to_qp(up: dict, users: set, perms: set, nroles) -> gp.Model:
 
 def run_model(m, filepath, filename):
     m.update()
+    filename = filename.replace('.txt', '')
     m.write(os.path.join(filepath, filename + '.lp'))
 
     m.optimize()
